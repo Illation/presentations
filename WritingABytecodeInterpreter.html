@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="reveal.js/css/theme/moon.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>Writing a Bytecode Interpreter</h2>
+					<p>
+						<small>by <a href="http://robert-lindner.com">Robert Lindner</a></small>
+					</p>
+				</section>
+				<section>
+					<section data-markdown>
+### What is bytecode?
+
+ * An instruction set designed to be used by a VM
+ * Also known as p-code (portable code)
+ * typically consists of one-byte opcodes
+					</section>
+					<section data-markdown>
+### What is an interpreter?
+
+ * A program that can <i>interpret</i> code.
+ * Synonymous to VM
+					</section>
+				</section>
+				<section>
+					<h4>Example Opcodes</h4>
+					<pre>
+						<code class="hljs" data-trim contenteditable>
+enum class Opcode : char
+{
+	LITERAL,
+	LOAD,
+	STORE,
+	ADD,
+	GREATER,
+	NOT,
+	JMP_IF,
+	PRINT
+	// [...]
+};
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h4>executing opcodes</h4>
+					<pre>
+						<code class="hljs" data-trim contenteditable>
+while( m_ProgramCounter < m_StaticBase)
+{
+  auto operation = static_cast&lt;Opcode>(m_RAM[m_ProgramCounter]);
+  switch(operation)
+  {
+		//Add a byte to the stack
+		case Opcode::LITERAL:
+		{
+			Push(Unpack&lt;int32>(++m_ProgramCounter));
+			m_ProgramCounter+=sizeof(int32);
+		}
+		continue;
+		//put memory at address on stack
+		case Opcode::LOAD:
+		{
+			Push(Unpack&lt;int32>(Pop()));
+			++m_ProgramCounter;
+		}
+		continue;
+		// add two values push result
+		case Opcode::ADD:
+		{
+			int32 b = Pop();
+			int32 a = Pop();
+			Push(a + b);
+			++m_ProgramCounter;
+		}
+		continue;
+	}
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h2>Questions?</h2>
+					<p>
+						Slides: <a href="http://github.com/illation/reveal.js">http://github.com/illation/reveal.js</a></br>
+						Repo: <a href="http://github.com/illation/BytecodeVM">http://github.com/illation/BytecodeVM</a>
+					</p>
+				</section>
+			</div>
+		</div>
+
+		<script src="reveal.js/lib/js/head.min.js"></script>
+		<script src="reveal.js/js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'reveal.js/plugin/markdown/marked.js' },
+					{ src: 'reveal.js/plugin/markdown/markdown.js' },
+					{ src: 'reveal.js/plugin/notes/notes.js', async: true },
+					{ src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
