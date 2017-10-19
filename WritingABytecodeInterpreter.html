@@ -287,6 +287,152 @@ PRINT_INT
 						</code>
 					</pre>
 				</section>
+				<section data-markdown>
+### Flow control
+
+#### Labels
+ * The symbol table also keeps track of labels
+ * The value assigned to labels is their position in the program
+ * JUMP commands can goto a label
+				</section>
+				<section>
+					<h3>Flow Control</h3>
+					<h4>JMP_IF</h4>
+					<ul>
+						<li class="fragment fade-in">Pop address from stack</li>
+						<li class="fragment fade-in">Pop condition from stack</li>
+						<li class="fragment fade-in">if condition -> move PC to address</li>
+						<li class="fragment fade-in">else increment PC</li>
+					</ul>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+case Opcode::JMP_IF:
+{
+	int32 address = Pop();
+	int32 condition = Pop();
+	if (condition)
+	{
+		m_ProgramCounter = static_cast<uint32>(address);
+	}
+	else
+	{
+		++m_ProgramCounter;
+	}
+}
+							continue;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h3>Flow Control</h3>
+					<h4>Example</h4>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+//var a = 6
+LITERAL 6
+LITERAL #a
+STORE
+
+//var b = 11
+LITERAL 11
+LITERAL #b
+STORE
+
+//<<(a) <<(" * ") <<(b) <<(" = ")
+LITERAL #a
+LOAD
+PRINT_INT
+LITERAL_ARRAY " * "
+LITERAL 3
+PRINT
+LITERAL #b
+LOAD
+PRINT_INT
+LITERAL_ARRAY " = "
+LITERAL 3
+PRINT
+
+//var acc = 0
+LITERAL 0
+LITERAL #acc
+STORE
+
+//for(var i = 0; i < b; ++i)
+//    acc += a
+
+LITERAL 0
+LITERAL #i
+STORE
+
+@loop
+
+LITERAL #i
+LOAD
+LITERAL #b
+LOAD
+LESS
+NOT
+LITERAL @loop_end
+JMP_IF
+
+LITERAL #acc
+LOAD
+LITERAL #a
+LOAD
+ADD
+LITERAL #acc
+STORE
+
+LITERAL #i
+LOAD
+LITERAL 1
+ADD
+LITERAL #i
+STORE
+LITERAL @loop
+JMP
+
+@loop_end
+
+//<<(acc) << endl
+LITERAL #acc
+LOAD
+PRINT_INT
+PRINT_ENDL
+
+//output
+//6 * 3 = 18
+						</code>
+					</pre>
+				</section>
+				<section data-markdown>
+### Functions
+
+#### Call Stack
+ * When a function is called
+ * Store all local variables
+ * Store the working stack
+ * Store the position of the program counter
+ * Goto function position and execute code
+				</section>
+				<section data-markdown>
+### Functions
+
+#### Call Stack
+ * When a function is returned
+ * Place return value on stack
+ * Restore local variables, working stack from previous call
+ * Goto stored return position
+				</section>
+				<section data-markdown>
+### Functions
+
+#### Stack Frame
+ * Call stack integrated into main stack
+ * Stack is a stack of stack frames
+ * Each stack frame stores return variables
+ * Each stack frame contains a working stack
+				</section>
 				<section>
 					<h2>Questions?</h2>
 					<p>
