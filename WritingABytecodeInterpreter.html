@@ -60,6 +60,7 @@
 					</section>
 				</section>
 				<section>
+					<h3>Opcodes</h3>
 					<h4>Example Opcodes</h4>
 					<pre>
 						<code class="hljs" data-trim contenteditable>
@@ -78,40 +79,211 @@ enum class Opcode : char
 						</code>
 					</pre>
 				</section>
+				<section data-transition="fade">
+					<h3>Opcodes</h3>
+	        <img src="BytecodeVM/1.jpg">
+				</section>
+				<section data-transition="fade">
+					<h3>Opcodes</h3>
+	        <img src="BytecodeVM/2.jpg">
+				</section>
+				<section data-transition="fade">
+					<h3>Opcodes</h3>
+	        <img src="BytecodeVM/3.jpg">
+				</section>
 				<section>
 					<h4>executing opcodes</h4>
 					<pre>
 						<code class="hljs" data-trim contenteditable>
-while( m_ProgramCounter < m_StaticBase)
+while( m_ProgramCounter < m_ProgramEnd)
 {
-  auto operation = static_cast&lt;Opcode>(m_RAM[m_ProgramCounter]);
-  switch(operation)
-  {
-		//Add a byte to the stack
+	auto operation = static_cast&lt;Opcode>(m_RAM[m_ProgramCounter]);
+	switch(operation)
+	{
 		case Opcode::LITERAL:
-		{
-			Push(Unpack&lt;int32>(++m_ProgramCounter));
-			m_ProgramCounter+=sizeof(int32);
-		}
+		//Place something on the stack
+		//change program counter
 		continue;
-		//put memory at address on stack
+
 		case Opcode::LOAD:
-		{
-			Push(Unpack&lt;int32>(Pop()));
-			++m_ProgramCounter;
-		}
+		//Load something from memory
+		//change program counter
 		continue;
-		// add two values push result
+
 		case Opcode::ADD:
-		{
-			int32 b = Pop();
-			int32 a = Pop();
-			Push(a + b);
-			++m_ProgramCounter;
-		}
+		//Add something
+		//change program counter
 		continue;
 	}
 }
+						</code>
+					</pre>
+				</section>
+				<section data-markdown>
+### The Stack
+
+ * Fixed size section in memory
+ * Push and Pop operations use a Stack Pointer to simulate LIFO
+ * Used to exectute most operations
+				</section>
+				<section data-transition="fade">
+					<h3>The Stack</h3>
+	        <img src="BytecodeVM/4.jpg">
+				</section>
+				<section>
+					<h3>The Stack</h3>
+					<h4>Literal</h4>
+					<ul>
+						<li class="fragment fade-in">Increments Program Counter</li>
+						<li class="fragment fade-in">Pushes data at PC on Stack</li>
+						<li class="fragment fade-in">Increments PC again</li>
+					</ul>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+case Opcode::LITERAL:
+{
+	Push(Unpack<int32>(++m_ProgramCounter));
+	m_ProgramCounter += sizeof(int32);
+}
+continue;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h3>The Stack</h3>
+					<h4>Arithmetic &amp; Logic operations</h4>
+					<ul>
+						<li class="fragment fade-in">Pop arguments into registers</li>
+						<li class="fragment fade-in">Perform operation</li>
+						<li class="fragment fade-in">Push result on Stack</li>
+						<li class="fragment fade-in">Increments PC</li>
+					</ul>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+case Opcode::ADD:
+{
+	int32 b = Pop();
+	int32 a = Pop();
+	Push(a + b);
+	++m_ProgramCounter;
+}
+continue;
+						</code>
+					</pre>
+				</section>
+				<section data-transition="fade">
+					<h3>The Stack</h3>
+	        <img src="BytecodeVM/4.jpg">
+				</section>
+				<section data-transition="fade">
+					<h3>The Stack</h3>
+	        <img src="BytecodeVM/5.jpg">
+				</section>
+				<section data-transition="fade">
+					<h3>The Stack</h3>
+	        <img src="BytecodeVM/6.jpg">
+				</section>
+				<section data-transition="fade">
+					<h3>The Stack</h3>
+	        <img src="BytecodeVM/7.jpg">
+				</section>
+				<section data-markdown>
+### Memory
+
+#### Layout
+ * Stack (1 MB)
+ * Program opcode (Depends on size of code)
+ * Static Memory (Depends on number of static variables)
+ * Dynamic Memory (The rest of the memory)
+				</section>
+				<section>
+					<h3>Memory</h3>
+					<h4>LOAD</h4>
+					<ul>
+						<li class="fragment fade-in">Pop address from stack</li>
+						<li class="fragment fade-in">Read memory at address</li>
+						<li class="fragment fade-in">Push read value on stack</li>
+						<li class="fragment fade-in">Increment PC</li>
+					</ul>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+case Opcode::LOAD:
+{
+	Push(Unpack&lt;int32>(Pop()));
+	++m_ProgramCounter;
+}
+continue;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h3>Memory</h3>
+					<h4>STORE</h4>
+					<ul>
+						<li class="fragment fade-in">Pop address from stack</li>
+						<li class="fragment fade-in">Pop data from stack</li>
+						<li class="fragment fade-in">Write data at address in RAM</li>
+						<li class="fragment fade-in">Increment PC</li>
+					</ul>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+case Opcode::STORE:
+{
+	int32 address = Pop();
+	Pack&lt;int32>(address, Pop());
+	++m_ProgramCounter;
+}
+continue;
+						</code>
+					</pre>
+				</section>
+				<section data-markdown>
+### Memory
+
+#### Static Variables
+ * A symbol table keeps track of all variables in the program
+ * Assigns an address to each variable after all have been found
+ * Replaces variables with addresses on code generation
+				</section>
+				<section>
+					<h3>Memory</h3>
+					<h4>Example</h4>
+					<pre class="fragment fade-in">
+						<code class="hljs" data-trim contenteditable>
+//var a = 6
+LITERAL 6
+LITERAL #a
+STORE
+
+//var b = 11
+LITERAL 11
+LITERAL #b
+STORE
+
+//<<(a) <<(" + ") <<(b) <<(" = ")
+LITERAL #a
+LOAD
+PRINT_INT
+LITERAL_ARRAY " + "
+LITERAL 3
+PRINT
+LITERAL #b
+LOAD
+PRINT_INT
+LITERAL_ARRAY " = "
+LITERAL 3
+PRINT
+
+//<<(a + b)
+LITERAL #a
+LOAD
+LITERAL #b
+LOAD
+ADD
+PRINT_INT
+
+//output
+//6 + 3 = 9
 						</code>
 					</pre>
 				</section>
